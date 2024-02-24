@@ -5,3 +5,7 @@ gen:
 rec:
 	@go build -o bin/recv data_recv/*.go
 	@./bin/recv
+
+prc:
+	@go build -o bin/prc data_proc/*.go
+	@./bin/prc
