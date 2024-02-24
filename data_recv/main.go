@@ -16,7 +16,7 @@ type DataReceiver struct {
 
 const (
 	wsServerPort = ":3000"
-	kafkaTopic   = "mytopic"
+	kafkaTopic   = "wstopic"
 )
 
 func main() {
@@ -24,7 +24,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	http.HandleFunc("/", httpHandlerWrapper(rec.wsHandler))
+	http.HandleFunc("/", rec.wsHandler)
 
 	fmt.Println("websocket server started on port", wsServerPort)
 	log.Fatal(http.ListenAndServe(wsServerPort, nil))
@@ -41,49 +41,32 @@ func NewDataReceiver(topic string) (*DataReceiver, error) {
 	}, nil
 }
 
-func (d *DataReceiver) wsHandler(w http.ResponseWriter, r *http.Request) error {
+func (d *DataReceiver) wsHandler(w http.ResponseWriter, r *http.Request) {
 	upgrader := websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
 	}
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
 	d.conn = conn
 
-	errCh := make(chan error)
-	go func() {
-		errCh <- d.startReceiveData()
-	}()
-
-	if err := <-errCh; err != nil {
-		return err
-	}
-	return nil
+	go d.startReceiveData()
 }
 
-func (d *DataReceiver) startReceiveData() error {
+func (d *DataReceiver) startReceiveData() {
 	fmt.Println("new websocket client connected")
 	for {
 		var dataSlice []types.Person
 		if err := d.conn.ReadJSON(&dataSlice); err != nil {
-			return err
+			log.Println("read json in ws server error:", err)
 		}
+		fmt.Println(dataSlice)
 		for _, data := range dataSlice {
 			if err := d.kp.ProduceToKafka(data); err != nil {
-				return err
+				log.Println("producing to kafka in ws server error:", err)
 			}
-		}
-	}
-}
-
-type fnType func(w http.ResponseWriter, r *http.Request) error
-
-func httpHandlerWrapper(fn fnType) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if err := fn(w, r); err != nil {
-			log.Printf("error from the websocket server handler %v", err)
 		}
 	}
 }
