@@ -13,8 +13,8 @@ type Producer interface {
 }
 
 type KafkaProduce struct {
-	producer *kafka.Producer
-	topic    string
+	produce *kafka.Producer
+	topic   string
 }
 
 func NewKafkaProduce(topic string) (*KafkaProduce, error) {
@@ -22,7 +22,6 @@ func NewKafkaProduce(topic string) (*KafkaProduce, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error initializing kafka producer client %w", err)
 	}
-	defer p.Close()
 
 	go func() {
 		for e := range p.Events() {
@@ -35,8 +34,8 @@ func NewKafkaProduce(topic string) (*KafkaProduce, error) {
 		}
 	}()
 	return &KafkaProduce{
-		producer: p,
-		topic:    topic,
+		produce: p,
+		topic:   topic,
 	}, nil
 }
 
@@ -45,7 +44,7 @@ func (k *KafkaProduce) ProduceToKafka(data types.Person) error {
 	if err != nil {
 		return fmt.Errorf("error marshaling the data before produce to kafka %w", err)
 	}
-	return k.producer.Produce(&kafka.Message{
+	return k.produce.Produce(&kafka.Message{
 		TopicPartition: kafka.TopicPartition{Topic: &k.topic, Partition: kafka.PartitionAny},
 		Value:          []byte(d),
 	}, nil)
