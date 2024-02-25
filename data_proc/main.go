@@ -4,12 +4,20 @@ import (
 	"log"
 )
 
-const kafkaTopic = "wstopic"
+const (
+	kafkaTopic   = "wstopic"
+	currentStage = "data_proc stage"
+)
 
 func main() {
-	c, err := NewKafkaConsume(kafkaTopic, NewReplace())
+	var (
+		r   Replacer
+		err error
+	)
+	r = NewDataMiddlewareLogger(NewReplace())
+	consumeAndSendToAggregator, err := NewKafkaConsume(kafkaTopic, r)
 	if err != nil {
 		log.Fatal(err)
 	}
-	c.start()
+	consumeAndSendToAggregator.start()
 }
