@@ -11,15 +11,17 @@ import (
 
 type DataReceiver struct {
 	conn *websocket.Conn
-	kp   *KafkaProduce
+	kp   Producer
 }
 
 const (
 	wsServerPort = ":3000"
 	kafkaTopic   = "wstopic"
+	stageStatus  = "data_receiver sending to kafka"
 )
 
 func main() {
+
 	rec, err := NewDataReceiver(kafkaTopic)
 	if err != nil {
 		log.Fatal(err)
@@ -31,11 +33,16 @@ func main() {
 }
 
 func NewDataReceiver(topic string) (*DataReceiver, error) {
-	kafkaProducerClient, err := NewKafkaProduce(topic)
+	var (
+		kafkaProducerClient Producer
+		err                 error
+	)
+	kafkaProducerClient, err = NewKafkaProduce(topic)
 	if err != nil {
 		return nil, err
 	}
 
+	kafkaProducerClient = NewDataMiddlewareLogger(kafkaProducerClient)
 	return &DataReceiver{
 		kp: kafkaProducerClient,
 	}, nil
@@ -62,8 +69,8 @@ func (d *DataReceiver) startReceiveData() {
 		if err := d.conn.ReadJSON(&dataSlice); err != nil {
 			log.Println("read json in ws server error:", err)
 		}
-		fmt.Println(dataSlice)
 		for _, data := range dataSlice {
+			data.Stage = stageStatus
 			if err := d.kp.ProduceToKafka(data); err != nil {
 				log.Println("producing to kafka in ws server error:", err)
 			}
