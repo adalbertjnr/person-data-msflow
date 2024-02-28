@@ -2,11 +2,14 @@ package main
 
 import (
 	"log"
+
+	"github.com/adalbertjnr/ws-person/aggregator/client"
 )
 
 const (
-	kafkaTopic   = "wstopic"
-	currentStage = "data_proc stage"
+	kafkaTopic         = "wstopic"
+	currentStage       = "data_proc stage"
+	httpServerEndpoint = "http://localhost:3000"
 )
 
 func main() {
@@ -15,7 +18,7 @@ func main() {
 		err error
 	)
 	r = NewDataMiddlewareLogger(NewReplace())
-	consumeAndSendToAggregator, err := NewKafkaConsume(kafkaTopic, r)
+	consumeAndSendToAggregator, err := NewKafkaConsume(kafkaTopic, r, client.NewEndpoint(httpServerEndpoint))
 	if err != nil {
 		log.Fatal(err)
 	}
