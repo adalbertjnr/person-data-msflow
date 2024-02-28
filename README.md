@@ -1,1 +1,1 @@
-![alt text](ms.jpg)
+![](msc.jpg)
