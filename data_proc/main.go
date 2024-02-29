@@ -9,7 +9,7 @@ import (
 const (
 	kafkaTopic         = "wstopic"
 	currentStage       = "data_proc stage"
-	httpServerEndpoint = "http://localhost:3000"
+	httpServerEndpoint = "http://localhost:3001"
 )
 
 func main() {
