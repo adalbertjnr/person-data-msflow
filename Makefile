@@ -9,3 +9,7 @@ rec:
 prc:
 	@go build -o bin/prc data_proc/*.go
 	@./bin/prc
+
+agg:
+	@go build -o bin/agg aggregator/*.go
+	@./bin/agg
