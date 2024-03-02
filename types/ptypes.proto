@@ -1,0 +1,17 @@
+syntax = "proto3";
+package types;
+option go_package = "github.com/adalbertjnr/types";
+
+service Aggregator {
+  rpc Aggregate(AggregatePerson) returns (None) {}
+}
+
+message None {}
+
+message AggregatePerson {
+  int32 id = 1;
+  string name = 2;
+  int32 age = 3;
+  string role = 4;
+  string stage = 5;
+}
