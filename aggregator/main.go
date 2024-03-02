@@ -15,7 +15,7 @@ const (
 
 func main() {
 	go func() {
-		if err := GRPCServer(grpcServerAddr); err != nil {
+		if err := GRPCServer(grpcServerAddr, NewDataStore()); err != nil {
 			log.Fatal(err)
 		}
 	}()
