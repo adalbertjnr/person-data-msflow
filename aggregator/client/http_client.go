@@ -9,17 +9,17 @@ import (
 	"github.com/adalbertjnr/ws-person/types"
 )
 
-type Endpoint struct {
+type HTTPClientEndpoint struct {
 	endpoint string
 }
 
-func NewEndpoint(endpoint string) *Endpoint {
-	return &Endpoint{
+func NewEndpoint(endpoint string) *HTTPClientEndpoint {
+	return &HTTPClientEndpoint{
 		endpoint: endpoint,
 	}
 }
 
-func (e *Endpoint) Aggregate(data types.Person) error {
+func (e *HTTPClientEndpoint) Aggregate(data types.Person) error {
 	b, err := json.Marshal(data)
 	if err != nil {
 		return fmt.Errorf("error serializing data. http client error %w", err)

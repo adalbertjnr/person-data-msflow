@@ -15,10 +15,10 @@ import (
 type KafkaConsume struct {
 	consume      *kafka.Consumer
 	r            Replacer
-	httpEndpoint *client.Endpoint
+	httpEndpoint *client.HTTPClientEndpoint
 }
 
-func NewKafkaConsume(topic string, replacer Replacer, endpoint *client.Endpoint) (*KafkaConsume, error) {
+func NewKafkaConsume(topic string, replacer Replacer, endpoint *client.HTTPClientEndpoint) (*KafkaConsume, error) {
 	c, err := kafka.NewConsumer(&kafka.ConfigMap{
 		"bootstrap.servers": "localhost",
 		"group.id":          "myGroup",
