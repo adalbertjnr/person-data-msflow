@@ -1,11 +1,7 @@
 package main
 
 import (
-	"context"
 	"log"
-
-	"github.com/adalbertjnr/ws-person/aggregator/client"
-	"github.com/adalbertjnr/ws-person/types"
 )
 
 const (
@@ -19,18 +15,5 @@ func main() {
 			log.Fatal(err)
 		}
 	}()
-	c, err := client.NewGRPCClientEndpoint(grpcServerAddr)
-	if err != nil {
-		log.Fatal(err)
-	}
-	if err := c.Aggregate(context.Background(), &types.AggregatePerson{
-		Id:    int32(2),
-		Name:  "foo",
-		Age:   int32(20),
-		Role:  "barRole",
-		Stage: "checking grpc client",
-	}); err != nil {
-		log.Fatal(err)
-	}
 	log.Fatal(HTTPServer(httpServerAddr))
 }
