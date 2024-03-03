@@ -38,3 +38,26 @@ func (e *HTTPClientEndpoint) Aggregate(ctx context.Context, data *types.Aggregat
 	}
 	return nil
 }
+
+func (e *HTTPClientEndpoint) GetPersonById(ctx context.Context, id int) (*types.Person, error) {
+	b, err := json.Marshal(id)
+	if err != nil {
+		return nil, fmt.Errorf("error serializing user id to create the request for gateway %w", err)
+	}
+	req, err := http.NewRequest(http.MethodGet, e.endpoint, bytes.NewBuffer(b))
+	if err != nil {
+		return nil, err
+	}
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("not expected status code from the gateway server %d", resp.StatusCode)
+	}
+	p := types.Person{}
+	if err := json.NewDecoder(resp.Body).Decode(&p); err != nil {
+		return nil, err
+	}
+	return &p, nil
+}
