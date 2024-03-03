@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/adalbertjnr/ws-person/aggregator/client"
 	"github.com/sirupsen/logrus"
@@ -53,6 +54,15 @@ func httpHandlerWrapper(fn apiFn) http.HandlerFunc {
 		if err := fn(w, r); err != nil {
 			jsonResponse(w, http.StatusInternalServerError, err.Error())
 		}
+		defer func(start time.Time) {
+			logrus.WithFields(logrus.Fields{
+				"uri":        r.RequestURI,
+				"remoteAddr": r.RemoteAddr,
+				"time":       start,
+				"took":       time.Since(start).Seconds(),
+			})
+		}(time.Now())
+
 	}
 }
 
