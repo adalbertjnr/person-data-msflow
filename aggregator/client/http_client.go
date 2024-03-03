@@ -2,6 +2,7 @@ package client
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -13,13 +14,13 @@ type HTTPClientEndpoint struct {
 	endpoint string
 }
 
-func NewEndpoint(endpoint string) *HTTPClientEndpoint {
+func NewHTTPClientEndpoint(endpoint string) *HTTPClientEndpoint {
 	return &HTTPClientEndpoint{
 		endpoint: endpoint,
 	}
 }
 
-func (e *HTTPClientEndpoint) Aggregate(data types.Person) error {
+func (e *HTTPClientEndpoint) Aggregate(ctx context.Context, data *types.AggregatePerson) error {
 	b, err := json.Marshal(data)
 	if err != nil {
 		return fmt.Errorf("error serializing data. http client error %w", err)

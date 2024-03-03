@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -13,12 +14,12 @@ import (
 )
 
 type KafkaConsume struct {
-	consume      *kafka.Consumer
-	r            Replacer
-	httpEndpoint *client.HTTPClientEndpoint
+	consume            *kafka.Consumer
+	r                  Replacer
+	aggregatorEndpoint client.ClientPicker
 }
 
-func NewKafkaConsume(topic string, replacer Replacer, endpoint *client.HTTPClientEndpoint) (*KafkaConsume, error) {
+func NewKafkaConsume(topic string, replacer Replacer, endpoint client.ClientPicker) (*KafkaConsume, error) {
 	c, err := kafka.NewConsumer(&kafka.ConfigMap{
 		"bootstrap.servers": "localhost",
 		"group.id":          "myGroup",
@@ -32,9 +33,9 @@ func NewKafkaConsume(topic string, replacer Replacer, endpoint *client.HTTPClien
 		log.Fatal(err)
 	}
 	return &KafkaConsume{
-		consume:      c,
-		r:            replacer,
-		httpEndpoint: endpoint,
+		consume:            c,
+		r:                  replacer,
+		aggregatorEndpoint: endpoint,
 	}, nil
 }
 
@@ -54,7 +55,16 @@ func (k *KafkaConsume) consumeDataFromKafka() (*types.Person, error) {
 			}
 			data.Stage = currentStage
 			newDataWithStage := k.r.ReplaceData(data)
-			if err := k.httpEndpoint.Aggregate(*newDataWithStage); err != nil {
+
+			req := &types.AggregatePerson{
+				Id:    int32(newDataWithStage.Id),
+				Name:  newDataWithStage.Name,
+				Age:   int32(newDataWithStage.Age),
+				Role:  newDataWithStage.Role,
+				Stage: newDataWithStage.Stage,
+			}
+
+			if err := k.aggregatorEndpoint.Aggregate(context.TODO(), req); err != nil {
 				return nil, err
 			}
 			//if the error is not about timeout then return it
