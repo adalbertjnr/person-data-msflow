@@ -13,7 +13,7 @@ import (
 func HTTPServer(httpServerAddr string) error {
 	aggSvc := NewDataStore()
 	http.HandleFunc("/aggregate", handleAggregate(aggSvc))
-	http.HandleFunc("/invoice/{id}", handleDataGetterByID(aggSvc))
+	http.HandleFunc("/invoice", handleDataGetterByID(aggSvc))
 	fmt.Println("http aggregator server listening on port", httpServerAddr)
 	return http.ListenAndServe(httpServerAddr, nil)
 }
@@ -43,7 +43,7 @@ func handleDataGetterByID(agg Aggregator) http.HandlerFunc {
 			returnResponse(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
 			return
 		}
-		personId, err := strconv.Atoi(r.PathValue("id"))
+		personId, err := strconv.Atoi(r.URL.Query().Get("person_id"))
 		if err != nil {
 			returnResponse(w, http.StatusInternalServerError, err.Error())
 			return
